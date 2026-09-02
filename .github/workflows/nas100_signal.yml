@@ -2,8 +2,10 @@ name: NAS100 Pivot Signal Log
 
 on:
   schedule:
+    # 22:15 UTC, after US cash close (~21:00 UTC / 22:00 BST) and NAS100 daily bar confirms.
+    # Adjust for DST if your broker's daily bar close time differs.
     - cron: '15 22 * * 1-5'
-  workflow_dispatch: {}
+  workflow_dispatch: {}  # allows manual trigger for testing
 
 jobs:
   log-signal:
@@ -20,7 +22,6 @@ jobs:
 
       - name: Run signal logger
         env:
-          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python daily_signal_update.py
