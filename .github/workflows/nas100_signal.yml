@@ -1,0 +1,34 @@
+name: NAS100 Pivot Signal Log
+
+on:
+  schedule:
+    - cron: '15 22 * * 1-5'
+  workflow_dispatch: {}
+
+jobs:
+  log-signal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pandas requests
+
+      - name: Run signal logger
+        env:
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python daily_signal_update.py
+
+      - name: Commit updated log
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add nas100_signal_log.csv nas100_state.json
+          git diff --staged --quiet || git commit -m "Update NAS100 signal log $(date -u +%Y-%m-%d)"
+          git push
